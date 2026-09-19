@@ -19,6 +19,7 @@ import numpy as np
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
+from transformers import pipeline  # <--- Added for Deep Learning NLP Extraction
 
 # ─── Initialize R Environment ───────────────────────────────────────
 r = robjects.r
@@ -43,24 +44,41 @@ with localconverter(robjects.default_converter + pandas2ri.converter):
 # Primary Song Dataset
 df_songs = pd.read_csv(os.path.join(DATA_DIR, "song_features.csv"))
 
+# ─── Initialize AI Text Extractor Pipeline ─────────────────────────────
+print("Loading Transformer Mood Extraction Engine...")
+# This reads context, sentiment density, and nuances out-of-the-box
+mood_extractor = pipeline(
+    "text-classification", 
+    model="j-hartmann/emotion-english-distilroberta-base", 
+    top_k=1
+)
+
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
 def analyze_text_emotion(text: str) -> str:
-    """Parses text blocks to identify single-word core user emotion."""
-    text_lower = text.lower()
-    words = text_lower.split()
-    
-    lexicons = {
-        "happy": ["good", "great", "happy", "love", "smile", "fun", "excited", "awesome", "joy", "glad"],
-        "sad": ["sad", "cry", "lonely", "hurt", "bad", "down", "miss", "sorry", "gloomy", "heartbroke"],
-        "stressed": ["busy", "work", "deadline", "stressed", "pressure", "overwhelmed", "exhausted"],
-        "anxious": ["worry", "scared", "nervous", "anxious", "fear", "panic", "uncertain", "afraid"],
-        "angry": ["mad", "angry", "hate", "annoyed", "pissed", "wrong", "furious", "rage"]
-    }
-    
-    scores = {mood: sum(words.count(w) for w in words_list) for mood, words_list in lexicons.items()}
-    max_mood = max(scores, key=scores.get)
-    return max_mood if scores[max_mood] > 0 else "happy"
+    """Uses a Transformer network to dynamically extract the true core emotion keyword."""
+    if not text.strip():
+        return "neutral"
+        
+    try:
+        # Run inference against the deep learning transformer pipeline
+        predictions = mood_extractor(text)
+        # Pull out the top predicted label keyword (e.g. 'joy', 'sadness', 'fear')
+        extracted_keyword = predictions[0][0]['label']
+        
+        # Standardise model outputs to line up with your existing centroid dictionary
+        mapping = {
+            "joy": "happy",
+            "sadness": "sad",
+            "fear": "anxious",
+            "surprise": "happy",
+            "disgust": "angry",
+            "neutral": "happy"
+        }
+        return mapping.get(extracted_keyword, extracted_keyword)
+    except Exception as e:
+        print(f"Extraction failed, dropping back to default baseline: {e}")
+        return "happy"
 
 def get_mood_cluster_id(mood: str) -> int:
     """Finds the mathematical K-Means cluster index assigned to a mood archetype."""
@@ -84,10 +102,8 @@ def predict_song_scores(cluster_id: int) -> list:
     """Ranks matching songs within the chosen cluster directly via database properties."""
     candidates = df_songs.copy()
     
-    # Check if cluster column is already in the CSV file
     cluster_col = next((c for c in candidates.columns if c.lower() == 'cluster'), None)
     
-    # Inject clusters dynamically if missing from physical database
     if cluster_col is None:
         with localconverter(robjects.default_converter + pandas2ri.converter):
             r_clusters = np.array(r("km_bundle$model$cluster"))
@@ -108,34 +124,25 @@ def predict_song_scores(cluster_id: int) -> list:
             candidates['cluster'] = assigned_list
             cluster_col = 'cluster'
 
-    # Filter songs to only those inside the active cluster target slice
     candidates = candidates[candidates[cluster_col] == cluster_id].copy()
     
     if candidates.empty:
         return []
         
-    # Popularity metric verification block
     pop_col = next((c for c in candidates.columns if 'pop' in c.lower()), None)
     if pop_col:
         candidates["predicted_score"] = candidates[pop_col].astype(float)
     else:
         candidates["predicted_score"] = (candidates["valence"] * 50) + (candidates["energy"] * 50)
 
-    # ─── SAFELY SEARCH FOR HEADERS TO PREVENT KEYERROR ───
-    # Checks for track title column variations
     t_key = next((k for k in candidates.columns if 'title' in k.lower() or 'name' in k.lower() or 'track' in k.lower()), None)
-    
-    # Checks for track artist column variations
     a_key = next((k for k in candidates.columns if 'artist' in k.lower() or 'singer' in k.lower()), None)
     
     candidates = candidates.sort_values("predicted_score", ascending=False).reset_index(drop=True)
     
     ranked_songs = []
     for i, row in candidates.head(5).iterrows():
-        # Title selection fallback fallback logic
         song_title = row[t_key] if t_key else f"Track #{row.name}"
-        
-        # Artist selection fallback fallback logic
         song_artist = row[a_key] if a_key else "Unknown Artist"
         
         ranked_songs.append({
@@ -167,7 +174,7 @@ def index():
         "index.html",
         songs=songs_list,
         user_input=user_input,
-        predicted_emotion=predicted_emotion,
+        predicted_emotion=predicted_emotion.capitalize(),
         cluster_id=cluster_id
     )
 
