@@ -1,40 +1,40 @@
-# ─── Supervised Model: Random Forest ─────────────────────────
-# Predicts popularity_score for a given (mood, activity) pair
-# Run once to generate: backend/r_models/mood_rf.rds
+# ─── Supervised Model: Random Forest (Songs Edition) ─────────
+# Predicts popularity_score based on your K-Means cluster and features.
+# Run this once in R to rewrite: backend/r_models/mood_rf.rds
 
 library(randomForest)
-library(dplyr)
 
-# Load data
-df <- read.csv("Recommendation_System/backend/data/mood_activities.csv", stringsAsFactors = FALSE)
+# Load song features dataset
+songs <- read.csv("backend/data/song_features.csv", stringsAsFactors = FALSE)
 
-# Convert to factors
-df$mood      <- as.factor(df$mood)
-df$intensity <- as.factor(df$intensity)
+# Load the saved K-Means model to apply cluster tags dynamically
+km_bundle <- readRDS("backend/r_models/kmeans_songs.rds")
+songs$cluster <- km_bundle$model$cluster
 
-# Split 80/20
+# Convert structural cluster numbers to categories (factors)
+songs$cluster <- as.factor(songs$cluster)
+
+# Split into 80% Training and 20% Testing groups
 set.seed(42)
-n <- nrow(df)
+n <- nrow(songs)
 train_idx <- sample(n, floor(n * 0.8))
-train_df  <- df[train_idx, ]
-test_df   <- df[-train_idx, ]
+train_df  <- songs[train_idx, ]
+test_df   <- songs[-train_idx, ]
 
-# Train
+# Train the fresh model using song attributes
 rf_model <- randomForest(
-  popularity_score ~ mood + intensity + duration_min,
+  popularity_score ~ cluster + valence + energy + danceability + tempo + acousticness,
   data     = train_df,
   ntree    = 200,
   importance = TRUE
 )
 
-# Evaluate
+# Verify performance criteria
 preds <- predict(rf_model, newdata = test_df)
 rmse  <- sqrt(mean((preds - test_df$popularity_score)^2))
-cat(sprintf("Test RMSE: %.2f\n", rmse))
-cat("Variable Importance:\n")
-print(importance(rf_model))
+cat(sprintf("Success! Model Test RMSE: %.2f\n", rmse))
 
-# Save
-dir.create("Recommendation_System/backend/r_models", recursive = TRUE, showWarnings = FALSE)
-saveRDS(rf_model, "Recommendation_System/backend/r_models/mood_rf.rds")
-cat("Model saved to Recommendation_System/backend/r_models/mood_rf.rds\n")   
+# Save over the old file with the new song architecture
+dir.create("backend/r_models", recursive = TRUE, showWarnings = FALSE)
+saveRDS(rf_model, "backend/r_models/mood_rf.rds")
+cat("New Song Random Forest Model saved successfully!\n")
