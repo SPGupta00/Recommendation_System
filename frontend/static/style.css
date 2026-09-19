@@ -1,0 +1,56 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: #e0e0e0;
+}
+
+h1 { font-size: 1.8rem; }
+.subtitle { color: #aaa; }
+
+.mood-tag { color: #e94560; font-weight: bold; }
+
+/* Table styling */
+.shiny-table-table, .dataTable table {
+    background: #1e1e30 !important;
+    color: #e0e0e0 !important;
+    border-radius: 10px;
+    width: 100%;
+}
+.dataTable thead {
+    background: #2a2a45 !important;
+}
+.dataTable th {
+    color: #999 !important;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+.dataTable td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #333;
+}
+.dataTable tbody tr:hover {
+    background: #252540 !important;
+}
+
+/* Badge colors for intensity */
+.badge-low   { background: #1b4332; color: #74c69d; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+.badge-medium{ background: #3d3502; color: #f0e130; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+.badge-high  { background: #4a1c1c; color: #ff6b6b; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+
+/* Button */
+.action-button {
+    background: #e94560 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.5rem !important;
+}
+.action-button:hover { background: #c73650 !important; }
+
+/* Select box */
+select {
+    background: #222 !important;
+    color: #fff !important;
+    border: 1px solid #444 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem !important;
+}   
