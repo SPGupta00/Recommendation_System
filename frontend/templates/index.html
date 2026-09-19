@@ -3,60 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mood → Activity Recommender</title>
+    <title>Mood → Music Recommender</title>
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
 <div class="container">
-    <h1> Mood-Based Activity Recommender</h1>
-    <p class="subtitle">Powered by Random Forest (R) + K-Means (R) via Flask</p>
+    <header>
+        <h1>Mood-Based Music Recommender</h1>
+        <p class="subtitle">Powered by Random Forest (R) + K-Means (R) via Flask</p>
+    </header>
 
     <form method="POST" action="/" class="mood-form">
-        <label for="mood">How are you feeling?</label>
-        <select name="mood" id="mood" required>
-            <option value="" disabled {% if not user_mood %}selected{% endif %}>Select a mood...</option>
-            {% for m in moods %}
-            <option value="{{ m }}" {% if m == user_mood %}selected{% endif %}>{{ m | capitalize }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Suggest Activities</button>
+        <label for="diary_entry">How are you feeling? Write a paragraph about your day:</label>
+        <textarea 
+            name="diary_entry" 
+            id="diary_entry" 
+            placeholder="Type out what's going on or how you're holding up..." 
+            required>{{ user_input or '' }}</textarea>
+        <button type="submit">Analyze Emotion & Generate Playlist</button>
     </form>
 
-    {% if activities %}
+    {% if songs %}
     <div class="results">
-        <h2>Top Activities for <span class="mood-tag">{{ user_mood | capitalize }}</span></h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Activity</th>
-                    <th>Intensity</th>
-                    <th>Duration (min)</th>
-                    <th>Model Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for act in activities %}
-                <tr>
-                    <td>{{ act.rank }}</td>
-                    <td>{{ act.activity }}</td>
-                    <td><span class="badge {{ act.intensity | lower }}">{{ act.intensity }}</span></td>
-                    <td>{{ act.duration_min }}</td>
-                    <td>{{ "%.1f" | format(act.predicted_score) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="emotion-display">
+            <span>Detected Emotion:</span>
+            <span class="mood-tag">{{ predicted_emotion }}</span>
+            <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">(K-Means Cluster #{{ cluster_id }})</span>
+        </div>
 
-        {% if song_cluster %}
-        <p class="cluster-info">🎵 Song cluster <strong>#{{ song_cluster.cluster }}</strong> matched for "{{ user_mood }}"</p>
-        {% endif %}
+        <h3 class="section-title">🎵 AI Suggested Tracks for You</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 10%">Rank</th>
+                        <th style="width: 45%">Song Title</th>
+                        <th style="width: 25%">Artist</th>
+                        <th style="width: 10%">Tempo</th>
+                        <th style="width: 10%">Match</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for song in songs %}
+                    <tr>
+                        <td class="rank-num">#{{ song.rank }}</td>
+                        <td class="activity-name">⚡ {{ song.title }}</td>
+                        <td style="color: var(--text-muted);">{{ song.artist }}</td>
+                        <td>{{ song.tempo }} BPM</td>
+                        <td class="score-val">{{ "%.1f" | format(song.predicted_score) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% endif %}
 
-    {% if not activities and user_mood %}
-    <p class="no-results">No activities found for "{{ user_mood }}". Try another mood.</p>
+    {% if not songs and user_input %}
+    <p class="no-results">Could not map tracks for that emotional pattern. Try including explicit expression keywords!</p>
     {% endif %}
 </div>
+
 </body>
-</html>   
+</html>
