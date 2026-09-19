@@ -6,7 +6,7 @@ library(randomForest)
 library(dplyr)
 
 # Load data
-df <- read.csv("backend/data/mood_activities.csv", stringsAsFactors = FALSE)
+df <- read.csv("Recommendation_System/backend/data/mood_activities.csv", stringsAsFactors = FALSE)
 
 # Convert to factors
 df$mood      <- as.factor(df$mood)
@@ -35,6 +35,6 @@ cat("Variable Importance:\n")
 print(importance(rf_model))
 
 # Save
-dir.create("backend/r_models", recursive = TRUE, showWarnings = FALSE)
-saveRDS(rf_model, "backend/r_models/mood_rf.rds")
-cat("Model saved to backend/r_models/mood_rf.rds\n")   
+dir.create("Recommendation_System/backend/r_models", recursive = TRUE, showWarnings = FALSE)
+saveRDS(rf_model, "Recommendation_System/backend/r_models/mood_rf.rds")
+cat("Model saved to Recommendation_System/backend/r_models/mood_rf.rds\n")   
