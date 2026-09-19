@@ -1,0 +1,11 @@
+song_id,title,valence,energy,danceability,tempo,acousticness
+1,Happy Day,0.85,0.72,0.80,128,0.10
+2,Chill Waves,0.40,0.25,0.55,90,0.75
+3,Power Run,0.70,0.92,0.78,150,0.05
+4,Rainy Thoughts,0.20,0.15,0.40,70,0.85
+5,Stress Breaker,0.60,0.80,0.75,140,0.15
+6,Gentle Morning,0.55,0.30,0.50,80,0.60
+7,Party Anthem,0.90,0.88,0.85,130,0.08
+8,Deep Focus,0.35,0.20,0.45,65,0.80
+9,Energy Boost,0.75,0.90,0.82,145,0.05
+10,Calm Evening,0.45,0.22,0.48,75,0.70   

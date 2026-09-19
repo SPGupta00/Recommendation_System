@@ -1,0 +1,36 @@
+mood,activity,intensity,duration_min,popularity_score
+happy,Dancing,High,30,92
+happy,Cycling,Medium,45,85
+happy,Swimming,Medium,40,78
+happy,Jump Rope,High,20,71
+happy,Team Sports,High,60,65
+sad,Yoga,Low,30,88
+sad,Brisk Walking,Low,40,84
+sad,Swimming,Low,30,76
+sad,Meditation,Low,20,72
+sad,Stretching,Low,15,68
+stressed,Running,High,30,90
+stressed,Boxing,High,25,82
+stressed,Swimming,Medium,35,77
+stressed,Weight Training,High,40,73
+stressed,Deep Breathing,Low,15,69
+anxious,Slow Walking,Low,30,89
+anxious,Yoga,Low,40,86
+anxious,Swimming,Low,30,74
+anxious,Journaling + Walk,Low,25,70
+anxious,Gentle Stretching,Low,20,66
+angry,Running,High,30,91
+angry,Boxing,High,30,87
+angry,Weight Training,High,45,80
+angry,Rock Climbing,High,40,72
+angry,Swimming,Medium,30,68
+tired,Light Stretching,Low,15,85
+tired,Short Walk,Low,20,82
+tired,Yoga Nidra,Low,20,75
+tired,Deep Breathing,Low,10,70
+tired,Swimming,Low,25,64
+bored,Exploring New Route,Medium,40,83
+bored,Group Sports,Medium,60,79
+bored,Dance Class,Medium,45,74
+bored,Climbing,Medium,50,69
+bored,Swimming,Medium,35,65   
